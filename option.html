@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <!-- bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+      integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+      integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script>
+      (function (d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) {
+              return;
+          }
+          js = d.createElement(s);
+          js.id = id;
+          js.src = "//connect.facebook.com/en_US/messenger.Extensions.js";
+          fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'Messenger'));
+
+      window.extAsyncInit = () => {
+          MessengerExtensions.getSupportedFeatures(function success(result) {
+              let features = result.supported_features;
+              if (features.includes("context")) {
+                  MessengerExtensions.getContext('1083456095364910',
+                      function success(thread_context) {
+                          // success
+                          document.getElementById("psid").value = thread_context.psid;
+                      },
+                      function error(err) {
+                          // error
+                          console.log(err);
+                      }
+                  );
+              }
+          }, function error(err) {
+              // error retrieving supported features
+              console.log(err);
+          });
+      };
+    </script>
+
+    <div class="container">
+      <div class="card card-body mb-2">
+        <form action="/optionspostback" method="get" onsubmit="closeWindow();">
+          <div class="card card-body mb-2">
+            <input type="hidden" name="psid" id="psid">
+            <div class="form-group">
+              <h4 for="nome" align="center" style="color:#339FFF;">Nome Attività</h4>
+              <input align="center" type="text" class="form-control" id="nome" placeholder="Inserisci nome attività" required>
+            </div>
+          </div>
+          <div class="card card-body mb-2">
+            <div class="form-group">
+              <h4 for="contatti" align="center" style="color:#339FFF;">Contatti</h4>
+              <i class="fas fa-phone fa-lg" style="color:#767D7F;"></i>&nbsp; &nbsp;<input align="center" type="tel" class="form-control" id="telefono" placeholder="Telefono" required>
+              <br><i class="fab fa-whatsapp fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input type="tel" class="form-control" id="whatsapp" placeholder="Whatsapp">
+              <br><i class="fab fa-facebook-f fa-lg" style="color:#0979DE;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="facebook" placeholder="Facebook">
+              <br><i class="fab fa-telegram-plane fa-lg" style="color:#0AB5DF;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="telegram" placeholder="Telegram">
+            </div>
+          </div>
+          <div class="card card-body mb-2">
+            <h4 for="nome" align="center" style="color:#339FFF;">Categorie</h4>
+            <small id="cathelp" class="form-text text-muted">Puoi selezionare fino a tre categorie per la tua attività</small>
+            <div class="form-group">
+              <label for="exampleFormControlSelect1">Seleziona Categoria 1</label>
+              <select class="form-control" id="exampleFormControlSelect1" required>
+                <option value=""></option>
+                <option value="Frutteria">Frutteria</option>
+                <option value="Alimentari">Alimentari</option>
+                <option value="Enoteca">Enoteca</option>
+                <option value="Birroteca">Birroteca</option>
+                <option value="Oleoteca">Oleoteca</option>
+                <option value="Gastronomia">Gastronomia</option>
+                <option value="Panifici">Panifici</option>
+                <option value="Pastifice">Pastifice</option>
+                <option value="Macellerie">Macellerie</option>
+                <option value="Pescherie">Pescherie</option>
+                <option value="Formaggerie">Formaggerie</option>
+                <option value="Pasticcerie">Pasticcerie</option>
+                <option value="Cioccolaterie">Cioccolaterie</option>
+                <option value="Teerie">Teerie</option>
+                <option value="Torrefazioni">Torrefazioni</option>
+                <option value="Bio">Bio</option>
+                <option value="Altro...">Altro...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="exampleFormControlSelect1">Seleziona Categoria 2</label>
+              <select class="form-control" id="exampleFormControlSelect2">
+                <option value=""></option>
+                <option value="Frutteria">Frutteria</option>
+                <option value="Alimentari">Alimentari</option>
+                <option value="Enoteca">Enoteca</option>
+                <option value="Birroteca">Birroteca</option>
+                <option value="Oleoteca">Oleoteca</option>
+                <option value="Gastronomia">Gastronomia</option>
+                <option value="Panifici">Panifici</option>
+                <option value="Pastifice">Pastifice</option>
+                <option value="Macellerie">Macellerie</option>
+                <option value="Pescherie">Pescherie</option>
+                <option value="Formaggerie">Formaggerie</option>
+                <option value="Pasticcerie">Pasticcerie</option>
+                <option value="Cioccolaterie">Cioccolaterie</option>
+                <option value="Teerie">Teerie</option>
+                <option value="Torrefazioni">Torrefazioni</option>
+                <option value="Bio">Bio</option>
+                <option value="Altro...">Altro...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="exampleFormControlSelect1">Seleziona Categoria 3</label>
+              <select class="form-control" id="exampleFormControlSelect3">
+                <option value=""></option>
+                <option value="Frutteria">Frutteria</option>
+                <option value="Alimentari">Alimentari</option>
+                <option value="Enoteca">Enoteca</option>
+                <option value="Birroteca">Birroteca</option>
+                <option value="Oleoteca">Oleoteca</option>
+                <option value="Gastronomia">Gastronomia</option>
+                <option value="Panifici">Panifici</option>
+                <option value="Pastifice">Pastifice</option>
+                <option value="Macellerie">Macellerie</option>
+                <option value="Pescherie">Pescherie</option>
+                <option value="Formaggerie">Formaggerie</option>
+                <option value="Pasticcerie">Pasticcerie</option>
+                <option value="Cioccolaterie">Cioccolaterie</option>
+                <option value="Teerie">Teerie</option>
+                <option value="Torrefazioni">Torrefazioni</option>
+                <option value="Bio">Bio</option>
+                <option value="Altro...">Altro...</option>
+              </select>
+            </div>
+          </div>
+          <div class="card card-body mb-2">
+            <div class="form-group">
+              <h4 for="nome" align="center" style="color:#339FFF;">Descrizione</h4>
+              <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" maxlength="144"></textarea>
+            </div>    
+          </div>
+          <br><input type="submit" class="btn btn-primary" id="submitButton1" value="Invia Dati">
+        </form>
+      </div>
+      </div>
+  </body>
+  <script>
+    function closeWindow(){
+      MessengerExtensions.requestCloseBrowser(function success() {
+          console.log("Webview closing");
+      }, function error(err) {
+          console.log(err);
+      });
+    }
+    </script>
+</html>
