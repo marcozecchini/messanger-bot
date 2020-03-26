@@ -17,6 +17,7 @@
     "express": "^4.17.1",
     "request": "^2.88.2",
     "pug": "^2.0.4",
+    "acorn": ">=5.7.4",
     "@google/maps": "^1.1.0"
   },
   "engines": {
