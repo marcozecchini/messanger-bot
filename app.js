@@ -13,6 +13,7 @@ var requests = {};
 var coordinates = {};
 const SERVER_URL = process.env.SERVER_URL;
 
+
 // Handles messages events
 async function handleMessage(sender_psid, received_message) {
   let response;
@@ -36,45 +37,14 @@ async function handleMessage(sender_psid, received_message) {
       console.log(state);
       // Create the payload for a basic text message
       response = {
-        text: `Ciao! Registra la tua attività sulla nostra app.`
+        text: `Ciao! Registra gratuitamente la tua attività sull'app EasyCollect digitando 'Registra'.`
       };
     }
   } else if (received_message.attachments) {
     // Gets the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
     let address = received_message.attachments[0].payload.title;
-    response = {
-      attachment: {
-        type: "template",
-        payload: {
-          template_type: "generic",
-          elements: [
-            {
-              title: "Is this the right location?",
-              subtitle: "Tap a button to answer.",
-              default_action: {
-                type: "web_url",
-                url: attachment_url,
-                messenger_extensions: true,
-                webview_height_ratio: "tall"
-              },
-              buttons: [
-                {
-                  type: "postback",
-                  title: "Yes!",
-                  payload: "yes"
-                },
-                {
-                  type: "postback",
-                  title: "No!",
-                  payload: "no"
-                }
-              ]
-            }
-          ]
-        }
-      }
-    };
+    response = send_confirmation(address,'');
   }
   // Sends the response message
   callSendAPI(sender_psid, response);
@@ -97,7 +67,7 @@ function handlePostback(sender_psid, received_postback) {
   else if (payload === "Registra2" && !(sender_psid in state)) {
       // Create the payload for a basic text message
       response = {
-        text: `🏠 Ciao! Per registrarti inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
+        text: `🏠 Ciao! Per registrarti gratuitamente inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
       };
       state[sender_psid] = 1;
       console.log(state);
@@ -136,7 +106,7 @@ function setDatiAttivita(sender_psid) {
     return response;
 }
 
-// Serve the options path and set required headers
+// Serve the options path for the webview
 app.get('/options', (req, res, next) => {
     let referer = req.get('Referer');
     if (referer) {
@@ -162,7 +132,8 @@ app.get('/optionspostback', (req, res) => {
 
 
 function send_confirmation(requested_road, coordinates) {
-  var road = requested_road.split(",");
+  var coord = '';
+  if(coordinates != '') coord = " con coordinate " + coordinates[0] + " e " + coordinates[1];
   var response = {
     "attachment":{
         "type":"template",
@@ -177,11 +148,7 @@ function send_confirmation(requested_road, coordinates) {
               "messenger_extensions": false,
               "webview_height_ratio": "tall",
             },
-            "subtitle": requested_road +
-              " con coordinate " +
-              coordinates[0] +
-              " e " +
-              coordinates[1],
+            "subtitle": requested_road + coord,
             "buttons":[
               {
                 type: "postback",
