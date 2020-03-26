@@ -8,28 +8,41 @@ const request = require("request"),
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
+var state = {};
+var requests = {};
+var coordinates = {};
+const SERVER_URL = process.env.SERVER_URL;
 
 // Handles messages events
-function handleMessage(sender_psid, received_message) {
+async function handleMessage(sender_psid, received_message) {
   let response;
 
   // Check if the message contains text
   if (received_message.text) {
-    //If you want to register your shop
-    if (received_message.text == "Registra") {
+    //If you want to register your shop --
+    if (received_message.text.indexOf("Registra") !== -1) {
       // Create the payload for a basic text message
       response = {
-        text: `Good! Now send me the location!`
+        text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
       };
+      state[sender_psid] = 1;
+      console.log(state);
+    } else if (sender_psid in state && state[sender_psid] == 1) {
+      requests[sender_psid] = received_message.text;
+      console.log(requests[sender_psid]);
+      callMap(sender_psid, received_message.text);
+      state[sender_psid] = -1;
     } else {
+      console.log(state);
       // Create the payload for a basic text message
       response = {
-        text: `You sent the message: "${received_message.text}". Now send me an image!`
+        text: `Ciao! Registra la tua attività sulla nostra app.`
       };
     }
   } else if (received_message.attachments) {
     // Gets the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
+    let address = received_message.attachments[0].payload.title;
     response = {
       attachment: {
         type: "template",
@@ -37,9 +50,14 @@ function handleMessage(sender_psid, received_message) {
           template_type: "generic",
           elements: [
             {
-              title: "Is this the right picture?",
+              title: "Is this the right location?",
               subtitle: "Tap a button to answer.",
-              image_url: attachment_url,
+              default_action: {
+                type: "web_url",
+                url: attachment_url,
+                messenger_extensions: true,
+                webview_height_ratio: "tall"
+              },
               buttons: [
                 {
                   type: "postback",
@@ -58,7 +76,6 @@ function handleMessage(sender_psid, received_message) {
       }
     };
   }
-
   // Sends the response message
   callSendAPI(sender_psid, response);
 }
@@ -69,15 +86,186 @@ function handlePostback(sender_psid, received_postback) {
 
   // Get the payload for the postback
   let payload = received_postback.payload;
+  if (payload === "Registra" && !(sender_psid in state)) {
+      // Create the payload for a basic text message
+      response = {
+        text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
+      };
+      state[sender_psid] = 1;
+      console.log(state);
+    } 
+  else if (payload === "Registra2" && !(sender_psid in state)) {
+      // Create the payload for a basic text message
+      response = {
+        text: `🏠 Ciao! Per registrarti inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
+      };
+      state[sender_psid] = 1;
+      console.log(state);
+    }
 
   // Set the response based on the postback payload
   if (payload === "yes") {
-    response = { text: "Thanks!" };
+    response = setDatiAttivita(sender_psid);
+
+    // store the coordinates
   } else if (payload === "no") {
-    response = { text: "Oops, try sending another image." };
+    response = { text: "Oops, riprova. Ridigita `Registra`" };
   }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
+}
+
+// Define the template
+function setDatiAttivita(sender_psid) {
+    let response = {
+        attachment: {
+            type: "template",
+            payload: {
+                template_type: "button",
+                text: "📝 OK ci siamo quasi! Ora inserisci i dati principali della tua attività.",
+                buttons: [{
+                    type: "web_url",
+                    url: SERVER_URL + "/options",
+                    title: "Inserisci dati attività",
+                    webview_height_ratio: "tall",
+                    messenger_extensions: true
+                }]
+            }
+        }
+    };
+    return response;
+}
+
+// Serve the options path and set required headers
+app.get('/options', (req, res, next) => {
+    let referer = req.get('Referer');
+    if (referer) {
+        if (referer.indexOf('www.messenger.com') >= 0) {
+            res.setHeader('X-Frame-Options', 'ALLOW-FROM https://www.messenger.com/');
+        } else if (referer.indexOf('www.facebook.com') >= 0) {
+            res.setHeader('X-Frame-Options', 'ALLOW-FROM https://www.facebook.com/');
+        }
+        res.sendFile('./option.html', {root: __dirname});
+    }
+});
+
+// Handle postback from webview
+app.get('/optionspostback', (req, res) => {
+    let body = req.query;
+    let response = {
+        "text": 'Grazie, i dati della tua attività sono stati registrati.'
+    };
+
+    res.status(200).send('<h1>Grazie! Chiudi questa finestra per ritronare alla conversazione</h1>');
+    callSendAPI(body.psid, response);
+});
+
+
+function send_confirmation(requested_road, coordinates) {
+  var road = requested_road.split(",");
+  var response = {
+    "attachment":{
+        "type":"template",
+        "payload":{
+          "template_type":"generic",
+          "elements": [{
+            "title":"E' l'indirizzo corretto?",
+            "image_url": "https://cdn.glitch.com/d31a8c02-2bdb-433c-aa2c-17979565a966%2Fimage.png?v=1585216511231",
+            "default_action": {
+              "type": "web_url",
+              "url": `https://www.google.com/maps/place/`+requested_road,
+              "messenger_extensions": false,
+              "webview_height_ratio": "tall",
+            },
+            "subtitle": requested_road +
+              " con coordinate " +
+              coordinates[0] +
+              " e " +
+              coordinates[1],
+            "buttons":[
+              {
+                type: "postback",
+                title: "Si ✅",
+                payload: "yes"
+              },
+              {
+                type: "postback",
+                title: "No ❌",
+                payload: "no"
+              }
+            ]
+          }]
+        }
+      }
+    /*
+    attachment: {
+      type: "template",
+      payload: {
+        template_type: "generic",
+        elements: [
+          {
+            title: "E' l'indirizzo corretto?",
+            subtitle:
+              requested_road +
+              " con coordinate " +
+              coordinates[0] +
+              " e " +
+              coordinates[1],            
+            //TODO mostrare la mappa o link alla mappa
+            buttons: [
+              {
+                type: "postback",
+                title: "Si ✅",
+                payload: "yes"
+              },
+              {
+                type: "postback",
+                title: "No ❌",
+                payload: "no"
+              }
+            ]
+          }
+        ]
+      }
+    }*/
+  };
+  return response;
+}
+
+function callMap(sender_psid, req) {
+  var coordinates;
+  console.log(
+    "http://dev.virtualearth.net/REST/v1/Locations?AddressLine=" +
+      req +
+      "&key=" +
+      process.env.MAP_TOKEN
+  );
+  request(
+    {
+      uri:
+        "http://dev.virtualearth.net/REST/v1/Locations?AddressLine=" +
+        req +
+        "&key=" +
+        process.env.MAP_TOKEN,
+      method: "GET"
+    },
+    (err, res, body) => {
+      if (!err) {
+        // console.log(JSON.stringify(res));
+        body = JSON.parse(body);
+        coordinates =
+          body["resourceSets"][0]["resources"][0]["point"]["coordinates"];
+        // Create the payload for a basic text message
+
+        var response = send_confirmation(req, coordinates);
+        //state[sender_psid] = -1;
+        // Sends the response message
+        callSendAPI(sender_psid, response);
+      } else {
+        console.error("Unable to receive page:" + err);
+      }
+    }
+  );
 }
 
 // Sends response messages via the Send API
