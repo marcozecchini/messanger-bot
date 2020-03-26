@@ -47,19 +47,12 @@
               // error retrieving supported features
               console.log(err);
           });
-          document.getElementById('submitButton').addEventListener('click', () => {
-              MessengerExtensions.requestCloseBrowser(function success() {
-                  console.log("Webview closing");
-              }, function error(err) {
-                  console.log(err);
-              });
-          });
       };
     </script>
 
     <div class="container">
       <div class="card card-body mb-2">
-        <form action="/optionspostback" method="get">
+        <form action="/optionspostback" method="get" onsubmit="closeWindow();">
           <div class="card card-body mb-2">
             <input type="hidden" name="psid" id="psid">
             <div class="form-group">
@@ -71,7 +64,7 @@
             <div class="form-group">
               <h4 for="contatti" align="center" style="color:#339FFF;">Contatti</h4>
               <i class="fas fa-phone fa-lg" style="color:#767D7F;"></i>&nbsp; &nbsp;<input align="center" type="tel" class="form-control" id="telefono" placeholder="Telefono" required>
-              <br><i class="fab fa-whatsapp fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="whatsapp" placeholder="Whatsapp">
+              <br><i class="fab fa-whatsapp fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input type="tel" class="form-control" id="whatsapp" placeholder="Whatsapp">
               <br><i class="fab fa-facebook-f fa-lg" style="color:#0979DE;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="facebook" placeholder="Facebook">
               <br><i class="fab fa-telegram-plane fa-lg" style="color:#0AB5DF;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="telegram" placeholder="Telegram">
             </div>
@@ -155,9 +148,18 @@
               <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" maxlength="144"></textarea>
             </div>    
           </div>
-          <br><button type="submit" class="btn btn-primary">Invia Dati</button>
+          <br><input type="submit" class="btn btn-primary" id="submitButton1" value="Invia Dati">
         </form>
       </div>
       </div>
   </body>
+  <script>
+    function closeWindow(){
+      MessengerExtensions.requestCloseBrowser(function success() {
+          console.log("Webview closing");
+      }, function error(err) {
+          console.log(err);
+      });
+    }
+    </script>
 </html>

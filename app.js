@@ -197,40 +197,10 @@ function send_confirmation(requested_road, coordinates) {
           }]
         }
       }
-    /*
-    attachment: {
-      type: "template",
-      payload: {
-        template_type: "generic",
-        elements: [
-          {
-            title: "E' l'indirizzo corretto?",
-            subtitle:
-              requested_road +
-              " con coordinate " +
-              coordinates[0] +
-              " e " +
-              coordinates[1],            
-            //TODO mostrare la mappa o link alla mappa
-            buttons: [
-              {
-                type: "postback",
-                title: "Si ✅",
-                payload: "yes"
-              },
-              {
-                type: "postback",
-                title: "No ❌",
-                payload: "no"
-              }
-            ]
-          }
-        ]
-      }
-    }*/
   };
   return response;
 }
+
 
 function callMap(sender_psid, req) {
   var coordinates;
