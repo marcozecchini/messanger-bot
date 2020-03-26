@@ -12,11 +12,3 @@ Interested in learning more about the Messenger Platform? Check out these resour
 
 - [**Docs Docs Docs!**](https://developers.facebook.com/docs/messenger-platform/)
 
-## TODO
-
-- [ ] Send location in the message to the BOT. Options:
-
-  - lat/long
-  - Address
-
-- [ ] Show in the map for the PoC
