@@ -49,7 +49,7 @@
           });
       };
     </script>
-
+    
     <script>
     //If all checks are successful, close the window
     function closeWindow(){
@@ -66,7 +66,7 @@
           console.log(err);
       });
     }
-
+    
     // Check Selection fields. Cannot be categories with the same value
     // forirst category is mandatory
     function checkSelect(){
@@ -76,18 +76,18 @@
       if(category1 == category2 && category1 != '' && category2 != ''){
         window.alert("Hai inserito due volte la stessa categoria");
         return false;
-      }
+      } 
       else if(category1 == category3 && category1 != '' && category3 != ''){
         window.alert("Hai inserito due volte la stessa categoria");
         return false;
-      }
-
+      } 
       else if(category3 == category2 && category3 != '' && category2 != ''){
         window.alert("Hai inserito due volte la stessa categoria");
         return false;
       }
       return true;
     }
+    
     // Check Contacts fields. At least one contact must be present!
     function checkContact(){
       var telefono = document.getElementById("telefono").value;
@@ -96,11 +96,10 @@
       if(telefono == '' && telegram == '' && facebook == ''){
         window.alert("Inserisci almeno un contatto");
         return false;
-      }
+      } 
       return true;
     }
-
-
+    
     </script>
     <div class="container">
       <div class="card card-body mb-2">
@@ -191,9 +190,7 @@
                 <option value="111">Teeria</option>
                 <option value="121">Torrefazione</option>
                 <option value="131">Bio & Equo</option>
-
-                <option value="161">Altro...</option>
-
+                <option value="161">Altro...</option>  
               </select>
             </div>
           </div>
@@ -201,8 +198,7 @@
             <div class="form-group">
               <h4 for="description" align="center" style="color:#339FFF;">Descrizione</h4>
               <textarea class="form-control" name="description" id="description" rows="3" maxlength="144" required></textarea>
-            </div>
-
+            </div>    
           </div>
           <br><input type="submit" class="btn btn-primary" id="submitButton1" value="Invia Dati">
         </form>
