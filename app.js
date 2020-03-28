@@ -3,8 +3,12 @@
 // Imports dependencies and set up http server
 const request = require("request"),
   express = require("express"),
-  body_parser = require("body-parser"),
-  app = express().use(body_parser.json()); // creates express http server
+  bodyParser = require("body-parser"),
+  app = express();
+
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
@@ -12,7 +16,6 @@ var state = {};
 var requests = {};
 var coordinates = {};
 const SERVER_URL = process.env.SERVER_URL;
-
 
 // Handles messages events
 async function handleMessage(sender_psid, received_message) {
@@ -41,10 +44,13 @@ async function handleMessage(sender_psid, received_message) {
       };
     }
   } else if (received_message.attachments) {
+    // TODO How to answer at the attachments
+    /*
     // Gets the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
     let address = received_message.attachments[0].payload.title;
     response = send_confirmation(address,'');
+    */
   }
   // Sends the response message
   callSendAPI(sender_psid, response);
@@ -63,7 +69,7 @@ function handlePostback(sender_psid, received_postback) {
       };
       state[sender_psid] = 1;
       console.log(state);
-    } 
+    }
   else if (payload === "Registra2" && !(sender_psid in state)) {
       // Create the payload for a basic text message
       response = {
@@ -85,7 +91,7 @@ function handlePostback(sender_psid, received_postback) {
   callSendAPI(sender_psid, response);
 }
 
-// Define the template
+// Define the template to insert the main data of the shop
 function setDatiAttivita(sender_psid) {
     let response = {
         attachment: {
@@ -119,18 +125,65 @@ app.get('/options', (req, res, next) => {
     }
 });
 
-// Handle postback from webview
-app.get('/optionspostback', (req, res) => {
-    let body = req.query;
-    let response = {
-        "text": 'Grazie, i dati della tua attività sono stati registrati.'
-    };
+// Builds the payload based on the data received from the form
+function buildPayload(request_body){
+    let categories = [parseInt(request_body.category1)];
+    if(request_body.category2 != '') categories.push(parseInt(request_body.category2));
+    if(request_body.category3 != '') categories.push(parseInt(request_body.category3));
 
-    res.status(200).send('<h1>Grazie! Chiudi questa finestra per ritronare alla conversazione</h1>');
-    callSendAPI(body.psid, response);
+    var payload = {
+      "name" :  request_body.nomeattivita,
+      "address" : requests[request_body.psid],
+      "description" : request_body.description,
+      "categories_ids": categories
+    }
+
+    // Check contacts
+    if(request_body.telefono != '') payload.phone = request_body.telefono;
+    if(request_body.telegram != '') payload.telegram = request_body.telegram;
+    if(request_body.facebook != '') payload.facebook = request_body.facebook;
+
+    console.log("PSID " + request_body.psid);
+
+    return payload;
+}
+
+// Handle postback from webview. Send the post request to the BACKEND of
+// the application. If success, return the message on messenger.
+app.post('/optionspostback', (req, res) => {
+    let body = req.query;
+    var request_body = req.body;
+    let payload = buildPayload(request_body);
+    console.log(payload);
+
+
+    request(
+      {
+        uri: process.env.BACKEND_URL+"/shops",
+        method: "POST",
+        json: payload
+      },
+      (err, res, body) => {
+        if (!err) {
+        //if (!err && res.statusCode === 200) {
+          console.log(res.statusCode+": POST for shops success!");
+
+          let response = {
+              "text": 'Grazie, i dati della tua attività sono stati registrati.'
+          };
+
+          callSendAPI(request_body.psid, response);
+
+        } else {
+          console.error("Unable to send message: " + err);
+        }
+      }
+    );
+
+  res.status(200).send('Grazie! Chiudi questa finestra per ritronare alla conversazione');
 });
 
-
+// Sends the reply to the user to confirm the correction of the address
 function send_confirmation(requested_road, coordinates) {
   var coord = '';
   if(coordinates != '') coord = " con coordinate " + coordinates[0] + " e " + coordinates[1];
