@@ -1,14 +1,14 @@
 {
-  "name": "messenger-quick-start",
+  "name": "easycollect-messenger-bot",
   "version": "1.0.0",
-  "description": "An example webhook for Facebook Messenger quick start tutorial.",
+  "description": "Messenger bot developed for the EasyCollect project.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fbsamples/messenger-platform-samples.git"
+    "url": "https://github.com/marcozecchini/messenger-bot"
   },
   "author": "Facebook",
   "license": "ISC",
