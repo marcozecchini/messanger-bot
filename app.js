@@ -44,7 +44,7 @@ async function handleMessage(sender_psid, received_message) {
       };
     }
   } else if (received_message.attachments) {
-
+    console.log("DEBUG" + JSON.stringify(received_message.attachments));
     // TODO How to answer at the attachments
     /*
     // Gets the URL of the message attachment
@@ -70,7 +70,7 @@ function handlePostback(sender_psid, received_postback) {
       };
       state[sender_psid] = 1;
       console.log(state);
-    }
+    } 
   else if (payload === "Registra2" && !(sender_psid in state)) {
       // Create the payload for a basic text message
       response = {
@@ -131,22 +131,21 @@ function buildPayload(request_body){
     let categories = [parseInt(request_body.category1)];
     if(request_body.category2 != '') categories.push(parseInt(request_body.category2));
     if(request_body.category3 != '') categories.push(parseInt(request_body.category3));
-
+  
     var payload = {
-      "name" :  request_body.nomeattivita,
+      "name" :  request_body.nomeattivita, 
       "address" : requests[request_body.psid],
-      "description" : request_body.description,
+      "description" : request_body.description, 
       "categories_ids": categories
     }
-
+    
     // Check contacts
     if(request_body.telefono != '') payload.phone = request_body.telefono;
     if(request_body.telegram != '') payload.telegram = request_body.telegram;
     if(request_body.facebook != '') payload.facebook = request_body.facebook;
-
+  
     console.log("PSID " + request_body.psid);
-
-
+  
     return payload;
 }
 
@@ -157,7 +156,8 @@ app.post('/optionspostback', (req, res) => {
     var request_body = req.body;
     let payload = buildPayload(request_body);
     console.log(payload);
-
+    
+    
     request(
       {
         uri: process.env.BACKEND_URL+"/shops",
@@ -168,23 +168,22 @@ app.post('/optionspostback', (req, res) => {
         if (!err) {
         //if (!err && res.statusCode === 200) {
           console.log(res.statusCode+": POST for shops success!");
-
+          
           let response = {
               "text": 'Grazie, i dati della tua attività sono stati registrati.'
           };
 
           callSendAPI(request_body.psid, response);
-
+          
         } else {
           console.error("Unable to send message: " + err);
         }
       }
     );
-
+  
   res.status(200).send('Grazie! Chiudi questa finestra per ritronare alla conversazione');
 });
 
-// Sends the reply to the user to confirm the correction of the address
 function send_confirmation(requested_road, coordinates) {
   var coord = '';
   if(coordinates != '') coord = " con coordinate " + coordinates[0] + " e " + coordinates[1];
