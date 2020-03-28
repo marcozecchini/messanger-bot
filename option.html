@@ -49,6 +49,7 @@
           });
       };
     </script>
+
     <script>
     //If all checks are successful, close the window
     function closeWindow(){
@@ -80,13 +81,13 @@
         window.alert("Hai inserito due volte la stessa categoria");
         return false;
       }
+
       else if(category3 == category2 && category3 != '' && category2 != ''){
         window.alert("Hai inserito due volte la stessa categoria");
         return false;
       }
       return true;
     }
-
     // Check Contacts fields. At least one contact must be present!
     function checkContact(){
       var telefono = document.getElementById("telefono").value;
@@ -98,6 +99,7 @@
       }
       return true;
     }
+
 
     </script>
     <div class="container">
@@ -189,7 +191,9 @@
                 <option value="111">Teeria</option>
                 <option value="121">Torrefazione</option>
                 <option value="131">Bio & Equo</option>
+
                 <option value="161">Altro...</option>
+
               </select>
             </div>
           </div>
@@ -198,6 +202,7 @@
               <h4 for="description" align="center" style="color:#339FFF;">Descrizione</h4>
               <textarea class="form-control" name="description" id="description" rows="3" maxlength="144" required></textarea>
             </div>
+
           </div>
           <br><input type="submit" class="btn btn-primary" id="submitButton1" value="Invia Dati">
         </form>

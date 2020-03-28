@@ -44,6 +44,7 @@ async function handleMessage(sender_psid, received_message) {
       };
     }
   } else if (received_message.attachments) {
+
     // TODO How to answer at the attachments
     /*
     // Gets the URL of the message attachment
@@ -145,6 +146,7 @@ function buildPayload(request_body){
 
     console.log("PSID " + request_body.psid);
 
+
     return payload;
 }
 
@@ -155,7 +157,6 @@ app.post('/optionspostback', (req, res) => {
     var request_body = req.body;
     let payload = buildPayload(request_body);
     console.log(payload);
-
 
     request(
       {
@@ -221,7 +222,7 @@ function send_confirmation(requested_road, coordinates) {
   return response;
 }
 
-
+// Sends the reply to the user to confirm the correction of the address
 function callMap(sender_psid, req) {
   var coordinates;
   console.log(
