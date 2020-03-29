@@ -15,6 +15,7 @@ app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
 var state = {};
 var requests = {};
 var coordinates = {};
+var address = '';
 const SERVER_URL = process.env.SERVER_URL;
 
 // Handles messages events
@@ -25,33 +26,64 @@ async function handleMessage(sender_psid, received_message) {
   if (received_message.text) {
     //If you want to register your shop --
     if (received_message.text.indexOf("Registra") !== -1) {
+      requests[sender_psid] = {};
       // Create the payload for a basic text message
       response = {
-        text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
+        text: `🏠 Bene! Adesso inviami il nome della via della tua attività (Es: Corso Italia 11, Viale Garibaldi 12, ...)`
       };
-      state[sender_psid] = 1;
+      state[sender_psid] = 1; //STATO di VIA
       console.log(state);
     } else if (sender_psid in state && state[sender_psid] == 1) {
-      requests[sender_psid] = received_message.text;
+      requests[sender_psid]["via"] = received_message.text;
+      // Create the payload for a basic text message
+      response = {
+        text: `🌇 Adesso inviami il nome della città della tua attività`
+      };
+      state[sender_psid] = 2;
+      console.log(state);
+    } else if (sender_psid in state && state[sender_psid] == 2) {
+      // Create the payload for a basic text message
+      requests[sender_psid]["city"] = received_message.text;
+      response = {
+        text: `📍 Bene! Adesso inviami il CAP dove si trova la tua attività`
+      };
+      state[sender_psid] = 3; // STATO di CAP
+      console.log(state);
+    } else if (sender_psid in state && state[sender_psid] == 3) {
+      requests[sender_psid]["CAP"] = received_message.text;
       console.log(requests[sender_psid]);
-      callMap(sender_psid, received_message.text);
-      state[sender_psid] = -1;
+      callMap(sender_psid, requests[sender_psid]["via"]+","+requests[sender_psid]["city"]+","+requests[sender_psid]["CAP"]);
+      state[sender_psid] = 4; //STATO DI YES/NO
     } else {
       console.log(state);
       // Create the payload for a basic text message
       response = {
-        text: `Ciao! Registra gratuitamente la tua attività sull'app EasyCollect digitando 'Registra'.`
+        text: `Ciao! Registra gratuitamente la tua attività sull'app ColliGo digitando 'Registra'.`
       };
     }
   } else if (received_message.attachments) {
-    console.log("DEBUG" + JSON.stringify(received_message.attachments));
     // TODO How to answer at the attachments
-    /*
-    // Gets the URL of the message attachment
+    console.log(received_message.attachments);
+    let type = received_message.attachments[0].type;
     let attachment_url = received_message.attachments[0].payload.url;
     let address = received_message.attachments[0].payload.title;
-    response = send_confirmation(address,'');
-    */
+    if(type == "location" && address.includes("'s Location")){
+      var coord1 = attachment_url.match(/[0-9]{2}.[0-9]{6}/);
+      var coord2 = attachment_url.split(coord1)[1].match(/[0-9]{2}.[0-9]{6}/);
+      console.log("COORD1 = " + attachment_url.match(/[0-9]{2}.[0-9]{6}/));
+      console.log("COORD2 = " + attachment_url.split(coord1)[1].match(/[0-9]{2}.[0-9]{6}/));
+      //coord2address(sender_psid, coord1, coord2, received_message.attachments);
+    } else if(type == "location" && !address.includes("'s Location")){
+      response = {
+        text: `Ciao! Attualmente riesco solo a decifrare la tua posizione attuale. Per un indirizzo diverso inseriscilo manualmente.`
+      };
+      /*
+      console.log("COORD1 = " + attachment_url.match(/where[0-9a-zA-Z%]*FORM/));
+      var prova = attachment_url.match(/where[0-9a-zA-Z%]*FORM/);
+      var prova2 = prova.toString().split("%").join();
+      console.log(prova2.replace(/ /, ''));
+      */
+    }
   }
   // Sends the response message
   callSendAPI(sender_psid, response);
@@ -63,16 +95,18 @@ function handlePostback(sender_psid, received_postback) {
 
   // Get the payload for the postback
   let payload = received_postback.payload;
-  if (payload === "Registra" && !(sender_psid in state)) {
+  if (payload === "Registra" && (state[sender_psid] !== 1)) {
       // Create the payload for a basic text message
+      requests[sender_psid] = {}
       response = {
         text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
       };
       state[sender_psid] = 1;
       console.log(state);
     } 
-  else if (payload === "Registra2" && !(sender_psid in state)) {
+  else if (payload === "Registra2" && (state[sender_psid] !== 1)) {
       // Create the payload for a basic text message
+      requests[sender_psid] = {}
       response = {
         text: `🏠 Ciao! Per registrarti gratuitamente inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
       };
@@ -81,12 +115,21 @@ function handlePostback(sender_psid, received_postback) {
     }
 
   // Set the response based on the postback payload
-  if (payload === "yes") {
+  else if (payload === "yes" && state[sender_psid] === 4) {
     response = setDatiAttivita(sender_psid);
-
+    //TODO set stato 5
+    state[sender_psid] = 5;
     // store the coordinates
-  } else if (payload === "no") {
+  } else if (payload === "no" && state[sender_psid] === 4) {
     response = { text: "Oops, riprova. Ridigita `Registra`" };
+    //TODO set stato -1
+    state[sender_psid] = -1;
+  } else {
+      console.log(state);
+      // Create the payload for a basic text message
+      response = {
+        text: `Ciao! Registra gratuitamente la tua attività sull'app ColliGo digitando 'Registra'.`
+      };
   }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
@@ -134,7 +177,9 @@ function buildPayload(request_body){
   
     var payload = {
       "name" :  request_body.nomeattivita, 
-      "address" : requests[request_body.psid],
+      "address" : requests[request_body.psid]["via"],
+      "city" : requests[request_body.psid]["city"],
+      "cap" : requests[request_body.psid]["CAP"],
       "description" : request_body.description, 
       "categories_ids": categories
     }
@@ -143,6 +188,7 @@ function buildPayload(request_body){
     if(request_body.telefono != '') payload.phone = request_body.telefono;
     if(request_body.telegram != '') payload.telegram = request_body.telegram;
     if(request_body.facebook != '') payload.facebook = request_body.facebook;
+    if(request_body.website != '') payload.website = request_body.website;
   
     console.log("PSID " + request_body.psid);
   
@@ -220,6 +266,46 @@ function send_confirmation(requested_road, coordinates) {
   };
   return response;
 }
+
+/*
+// https://dev.virtualearth.net/REST/v1/LocationRecog/{point}
+function coord2address(sender_psid, coord1, coord2, req){
+  console.log(
+    "https://dev.virtualearth.net/REST/v1/LocationRecog/" + coord1+","+coord2+
+      "&key=" +
+      process.env.MAP_TOKEN
+  );
+  request(
+    {
+      uri:
+        "https://dev.virtualearth.net/REST/v1/LocationRecog/" + coord1+","+coord2+
+        "&key=" +
+        process.env.MAP_TOKEN,
+      method: "GET"
+    },
+    (err, res, body) => {
+      if (!err) {
+        //console.log(body);
+        body = JSON.parse(body);
+        address =
+          body["ResourceSets"][0]["resources"][0]["BusinessAddress"]["AddressLine"] +
+          body["ResourceSets"][0]["resources"][0]["BusinessAddress"]["Locality"] +
+          body["ResourceSets"][0]["resources"][0]["BusinessAddress"]["PostalCode"];
+        
+        console.log("ADDRESS = " + address);
+        // Create the payload for a basic text message
+
+        var response = send_confirmation(req, coordinates);
+        //state[sender_psid] = -1;
+        // Sends the response message
+        callSendAPI(sender_psid, response);
+      } else {
+        console.error("Unable to receive page:" + err);
+      }
+    }
+  );
+}
+*/
 
 // Sends the reply to the user to confirm the correction of the address
 function callMap(sender_psid, req) {

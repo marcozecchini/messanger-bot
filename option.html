@@ -93,7 +93,8 @@
       var telefono = document.getElementById("telefono").value;
       var telegram = document.getElementById("telegram").value;
       var facebook = document.getElementById("facebook").value;
-      if(telefono == '' && telegram == '' && facebook == ''){
+      var website = document.getElementById("website").value;
+      if(telefono == '' && telegram == '' && facebook == '' && website == ''){
         window.alert("Inserisci almeno un contatto");
         return false;
       } 
@@ -122,6 +123,7 @@
               --->
               <br><i class="fab fa-facebook-f fa-lg" style="color:#0979DE;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="facebook" name="facebook" placeholder="Facebook">
               <br><i class="fab fa-telegram-plane fa-lg" style="color:#0AB5DF;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="telegram" name="telegram" placeholder="Telegram">
+              <br><i class="fas fa-globe fa-lg"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="website" name="website" placeholder="Sito web">
             </div>
           </div>
           <div class="card card-body mb-2">
