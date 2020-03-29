@@ -99,7 +99,7 @@ function handlePostback(sender_psid, received_postback) {
       // Create the payload for a basic text message
       requests[sender_psid] = {}
       response = {
-        text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
+        text: `🏠 Ciao! Per registrarti gratuitamente inviami il nome della via della tua attività (Es: Corso Italia 11, Viale Garibaldi 12, ...)`
       };
       state[sender_psid] = 1;
       console.log(state);
@@ -108,7 +108,7 @@ function handlePostback(sender_psid, received_postback) {
       // Create the payload for a basic text message
       requests[sender_psid] = {}
       response = {
-        text: `🏠 Ciao! Per registrarti gratuitamente inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
+        text: `🏠 Ciao! Per registrarti gratuitamente inviami il nome della via della tua attività (Es: Corso Italia 11, Viale Garibaldi 12, ...)`
       };
       state[sender_psid] = 1;
       console.log(state);
