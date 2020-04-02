@@ -56,10 +56,10 @@ async function handleMessage(sender_psid, received_message) {
     } else {
       console.log(state);
       // Create the payload for a basic text message
-      response = {
-        text: `Ciao! Registra gratuitamente la tua attività sull'app ColliGo digitando 'Registra'.`
-      };
-      state[sender_psid] = -1; //STATO DI INIZIO
+      if (state[sender_psid] !== -1){
+        response = contactMessage("Ciao! 📝 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.")
+        state[sender_psid] = -1; //STATO DI INIZIO
+      }
     }
   } else if (received_message.attachments) {
     // TODO How to answer at the attachments
@@ -77,15 +77,15 @@ async function handleMessage(sender_psid, received_message) {
     } else if(type == "location" && !address.includes("'s Location") && (state[sender_psid] === 0)){
       
       response =  restartRegistra("Attualmente riesco solo a decifrare la tua posizione attuale. Per un indirizzo diverso inseriscilo manualmente. Premi `Registra`");
-      state[sender_psid] = -1; //STATO DI INIZIO
+      state[sender_psid] = 6; //STATO DI FINE
       
     } else {
       console.log(state);
       // Create the payload for a basic text message
-      response = {
-        text: `Ciao! Registra gratuitamente la tua attività sull'app ColliGo digitando 'Registra'.`
-      };
-      state[sender_psid] = -1; //STATO DI INIZIO
+      if (state[sender_psid] !== -1){
+        response = contactMessage("Ciao! 📝 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.")
+        state[sender_psid] = -1; //STATO DI INIZIO
+      }
     }
   }
   // Sends the response message
@@ -136,9 +136,10 @@ function handlePostback(sender_psid, received_postback) {
   } else {
       console.log(state);
       // Create the payload for a basic text message
-      response = {
-        text: `Ciao! Registra gratuitamente la tua attività sull'app ColliGo digitando 'Registra'.`
-      };
+      if (state[sender_psid] !== -1){
+        response = contactMessage("Ciao! 📝 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.")
+        state[sender_psid] = -1; //STATO DI INIZIO
+      }
   }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
@@ -196,6 +197,30 @@ function restartRegistra(text){
                     title: "Registra",
                     payload: "Registra"
                   }]
+              }
+          }
+      };
+  return response;
+}
+
+function contactMessage(text){
+  let response = {
+        attachment: {
+            type: "template",
+            payload: {
+                template_type: "button",
+                text: text,
+                buttons: [{
+                    type: "postback",
+                    title: "Registra",
+                    payload: "Registra"
+                  },{
+                    type: "web_url",
+                    url: "https://vetrina.cloud/#/utenti",
+                    title: "Domande frequenti",
+                    webview_height_ratio: "tall",
+                    messenger_extensions: true
+                }]
               }
           }
       };

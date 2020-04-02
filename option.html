@@ -94,8 +94,8 @@
       var telegram = document.getElementById("telegram").value;
       var facebook = document.getElementById("facebook").value;
       var website = document.getElementById("website").value;
-      if(telefono == '' && telegram == '' && facebook == '' && website == ''){
-        window.alert("Inserisci almeno un contatto");
+      if(telefono == '' && telegram == '' && facebook == ''){
+        window.alert("Inserisci almeno un contatto fra Telefono, Facebook o Telegram");
         return false;
       } 
       return true;
@@ -115,7 +115,8 @@
           <div class="card card-body mb-2">
             <div class="form-group">
               <h4 for="contatti" align="center" style="color:#339FFF;">Contatti</h4>
-              <small id="cathelp" class="form-text text-muted">Inserisci almeno un canale su cui vuoi essere contattato</small>
+              <small id="cathelp" class="form-text text-muted">Inserisci i canali sui quali vuoi essere contattato</small>
+              <small id="cathelpnote" class="form-text text-muted">Nota: almeno uno tra Telefono, Facebook o Telegram deve essere presente</small>
               <i class="fas fa-phone fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input align="center" type="tel" class="form-control" id="telefono" name="telefono" placeholder="Telefono">
               <!---
               For the moment it is include in the phone field
