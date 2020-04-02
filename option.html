@@ -49,117 +49,163 @@
           });
       };
     </script>
-
-    <div class="container">
-      <div class="card card-body mb-2">
-        <form action="/optionspostback" method="get" onsubmit="closeWindow();">
-          <div class="card card-body mb-2">
-            <input type="hidden" name="psid" id="psid">
-            <div class="form-group">
-              <h4 for="nome" align="center" style="color:#339FFF;">Nome Attività</h4>
-              <input align="center" type="text" class="form-control" id="nome" placeholder="Inserisci nome attività" required>
-            </div>
-          </div>
-          <div class="card card-body mb-2">
-            <div class="form-group">
-              <h4 for="contatti" align="center" style="color:#339FFF;">Contatti</h4>
-              <i class="fas fa-phone fa-lg" style="color:#767D7F;"></i>&nbsp; &nbsp;<input align="center" type="tel" class="form-control" id="telefono" placeholder="Telefono" required>
-              <br><i class="fab fa-whatsapp fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input type="tel" class="form-control" id="whatsapp" placeholder="Whatsapp">
-              <br><i class="fab fa-facebook-f fa-lg" style="color:#0979DE;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="facebook" placeholder="Facebook">
-              <br><i class="fab fa-telegram-plane fa-lg" style="color:#0AB5DF;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="telegram" placeholder="Telegram">
-            </div>
-          </div>
-          <div class="card card-body mb-2">
-            <h4 for="nome" align="center" style="color:#339FFF;">Categorie</h4>
-            <small id="cathelp" class="form-text text-muted">Puoi selezionare fino a tre categorie per la tua attività</small>
-            <div class="form-group">
-              <label for="exampleFormControlSelect1">Seleziona Categoria 1</label>
-              <select class="form-control" id="exampleFormControlSelect1" required>
-                <option value=""></option>
-                <option value="Frutteria">Frutteria</option>
-                <option value="Alimentari">Alimentari</option>
-                <option value="Enoteca">Enoteca</option>
-                <option value="Birroteca">Birroteca</option>
-                <option value="Oleoteca">Oleoteca</option>
-                <option value="Gastronomia">Gastronomia</option>
-                <option value="Panifici">Panifici</option>
-                <option value="Pastifice">Pastifice</option>
-                <option value="Macellerie">Macellerie</option>
-                <option value="Pescherie">Pescherie</option>
-                <option value="Formaggerie">Formaggerie</option>
-                <option value="Pasticcerie">Pasticcerie</option>
-                <option value="Cioccolaterie">Cioccolaterie</option>
-                <option value="Teerie">Teerie</option>
-                <option value="Torrefazioni">Torrefazioni</option>
-                <option value="Bio">Bio</option>
-                <option value="Altro...">Altro...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="exampleFormControlSelect1">Seleziona Categoria 2</label>
-              <select class="form-control" id="exampleFormControlSelect2">
-                <option value=""></option>
-                <option value="Frutteria">Frutteria</option>
-                <option value="Alimentari">Alimentari</option>
-                <option value="Enoteca">Enoteca</option>
-                <option value="Birroteca">Birroteca</option>
-                <option value="Oleoteca">Oleoteca</option>
-                <option value="Gastronomia">Gastronomia</option>
-                <option value="Panifici">Panifici</option>
-                <option value="Pastifice">Pastifice</option>
-                <option value="Macellerie">Macellerie</option>
-                <option value="Pescherie">Pescherie</option>
-                <option value="Formaggerie">Formaggerie</option>
-                <option value="Pasticcerie">Pasticcerie</option>
-                <option value="Cioccolaterie">Cioccolaterie</option>
-                <option value="Teerie">Teerie</option>
-                <option value="Torrefazioni">Torrefazioni</option>
-                <option value="Bio">Bio</option>
-                <option value="Altro...">Altro...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="exampleFormControlSelect1">Seleziona Categoria 3</label>
-              <select class="form-control" id="exampleFormControlSelect3">
-                <option value=""></option>
-                <option value="Frutteria">Frutteria</option>
-                <option value="Alimentari">Alimentari</option>
-                <option value="Enoteca">Enoteca</option>
-                <option value="Birroteca">Birroteca</option>
-                <option value="Oleoteca">Oleoteca</option>
-                <option value="Gastronomia">Gastronomia</option>
-                <option value="Panifici">Panifici</option>
-                <option value="Pastifice">Pastifice</option>
-                <option value="Macellerie">Macellerie</option>
-                <option value="Pescherie">Pescherie</option>
-                <option value="Formaggerie">Formaggerie</option>
-                <option value="Pasticcerie">Pasticcerie</option>
-                <option value="Cioccolaterie">Cioccolaterie</option>
-                <option value="Teerie">Teerie</option>
-                <option value="Torrefazioni">Torrefazioni</option>
-                <option value="Bio">Bio</option>
-                <option value="Altro...">Altro...</option>
-              </select>
-            </div>
-          </div>
-          <div class="card card-body mb-2">
-            <div class="form-group">
-              <h4 for="nome" align="center" style="color:#339FFF;">Descrizione</h4>
-              <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" maxlength="144"></textarea>
-            </div>    
-          </div>
-          <br><input type="submit" class="btn btn-primary" id="submitButton1" value="Invia Dati">
-        </form>
-      </div>
-      </div>
-  </body>
-  <script>
+    
+    <script>
+    //If all checks are successful, close the window
     function closeWindow(){
+      if(checkSelect() == false){
+        event.preventDefault();
+        return false;
+      }else if(checkContact() == false){
+        event.preventDefault();
+        return false;
+      }
       MessengerExtensions.requestCloseBrowser(function success() {
           console.log("Webview closing");
       }, function error(err) {
           console.log(err);
       });
     }
+    
+    // Check Selection fields. Cannot be categories with the same value
+    // forirst category is mandatory
+    function checkSelect(){
+      var category1 = document.getElementById("category1").value;
+      var category2 = document.getElementById("category2").value;
+      var category3 = document.getElementById("category3").value;
+      if(category1 == category2 && category1 != '' && category2 != ''){
+        window.alert("Hai inserito due volte la stessa categoria");
+        return false;
+      } 
+      else if(category1 == category3 && category1 != '' && category3 != ''){
+        window.alert("Hai inserito due volte la stessa categoria");
+        return false;
+      } 
+      else if(category3 == category2 && category3 != '' && category2 != ''){
+        window.alert("Hai inserito due volte la stessa categoria");
+        return false;
+      }
+      return true;
+    }
+    
+    // Check Contacts fields. At least one contact must be present!
+    function checkContact(){
+      var telefono = document.getElementById("telefono").value;
+      var telegram = document.getElementById("telegram").value;
+      var facebook = document.getElementById("facebook").value;
+      var website = document.getElementById("website").value;
+      if(telefono == '' && telegram == '' && facebook == ''){
+        window.alert("Inserisci almeno un contatto fra Telefono, Facebook o Telegram");
+        return false;
+      } 
+      return true;
+    }
+    
     </script>
+    <div class="container">
+      <div class="card card-body mb-2">
+        <form action="/optionspostback" method="post" onsubmit="closeWindow();">
+          <div class="card card-body mb-2">
+            <input type="hidden" name="psid" id="psid">
+            <div class="form-group">
+              <h4 for="nomeattivita" align="center" style="color:#339FFF;">Nome Attività</h4>
+              <input align="center" type="text" name="nomeattivita" class="form-control" id="nome" placeholder="Inserisci nome attività" required>
+            </div>
+          </div>
+          <div class="card card-body mb-2">
+            <div class="form-group">
+              <h4 for="contatti" align="center" style="color:#339FFF;">Contatti</h4>
+              <small id="cathelp" class="form-text text-muted">Inserisci i canali sui quali vuoi essere contattato</small>
+              <small id="cathelpnote" class="form-text text-muted">Nota: almeno uno tra Telefono, Facebook o Telegram deve essere presente</small>
+              <i class="fas fa-phone fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input align="center" type="tel" class="form-control" id="telefono" name="telefono" placeholder="Telefono">
+              <!---
+              For the moment it is include in the phone field
+              <br><i class="fab fa-whatsapp fa-lg" style="color:#0ADF30;"></i>&nbsp; &nbsp;<input type="tel" class="form-control" name="whatsapp" placeholder="Whatsapp">
+              --->
+              <br><i class="fab fa-facebook-f fa-lg" style="color:#0979DE;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="facebook" name="facebook" placeholder="Facebook">
+              <br><i class="fab fa-telegram-plane fa-lg" style="color:#0AB5DF;"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="telegram" name="telegram" placeholder="Telegram">
+              <br><i class="fas fa-globe fa-lg"></i>&nbsp; &nbsp;<input type="text" class="form-control" id="website" name="website" placeholder="Sito web">
+            </div>
+          </div>
+          <div class="card card-body mb-2">
+            <h4 for="category" align="center" style="color:#339FFF;">Categorie</h4>
+            <small id="cathelp2" class="form-text text-muted">Puoi selezionare fino a tre categorie per la tua attività</small>
+            <div class="form-group">
+              <select class="form-control" name="category1" id="category1" required>
+                <option value="">Seleziona Categoria 1</option>
+                <option value="141">Frutteria</option>
+                <option value="151">Alimentari</option>
+                <option value="1">Enoteca</option>
+                <option value="11">Birroteca</option>
+                <option value="21">Oleoteca</option>
+                <option value="31">Gastronomia</option>
+                <option value="41">Panificio</option>
+                <option value="51">Pastificio</option>
+                <option value="61">Macelleria</option>
+                <option value="71">Pescheria</option>
+                <option value="81">Formaggeria</option>
+                <option value="91">Pasticceria</option>
+                <option value="101">Cioccolateria</option>
+                <option value="111">Teeria</option>
+                <option value="121">Torrefazione</option>
+                <option value="131">Bio & Equo</option>
+                <option value="161">Altro...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select class="form-control" name="category2" id="category2">
+                <option value="">Seleziona Categoria 2</option>
+                <option value="141">Frutteria</option>
+                <option value="151">Alimentari</option>
+                <option value="1">Enoteca</option>
+                <option value="11">Birroteca</option>
+                <option value="21">Oleoteca</option>
+                <option value="31">Gastronomia</option>
+                <option value="41">Panificio</option>
+                <option value="51">Pastificio</option>
+                <option value="61">Macelleria</option>
+                <option value="71">Pescheria</option>
+                <option value="81">Formaggeria</option>
+                <option value="91">Pasticceria</option>
+                <option value="101">Cioccolateria</option>
+                <option value="111">Teeria</option>
+                <option value="121">Torrefazione</option>
+                <option value="131">Bio & Equo</option>
+                <option value="161">Altro...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select class="form-control" id="category3" name="category3">
+                <option value="">Seleziona Categoria 3</option>
+                <option value="141">Frutteria</option>
+                <option value="151">Alimentari</option>
+                <option value="1">Enoteca</option>
+                <option value="11">Birroteca</option>
+                <option value="21">Oleoteca</option>
+                <option value="31">Gastronomia</option>
+                <option value="41">Panificio</option>
+                <option value="51">Pastificio</option>
+                <option value="61">Macelleria</option>
+                <option value="71">Pescheria</option>
+                <option value="81">Formaggeria</option>
+                <option value="91">Pasticceria</option>
+                <option value="101">Cioccolateria</option>
+                <option value="111">Teeria</option>
+                <option value="121">Torrefazione</option>
+                <option value="131">Bio & Equo</option>
+                <option value="161">Altro...</option>  
+              </select>
+            </div>
+          </div>
+          <div class="card card-body mb-2">
+            <div class="form-group">
+              <h4 for="description" align="center" style="color:#339FFF;">Descrizione</h4>
+              <textarea class="form-control" name="description" id="description" rows="3" maxlength="144" required></textarea>
+            </div>    
+          </div>
+          <br><input type="submit" class="btn btn-primary" id="submitButton1" value="Invia Dati">
+        </form>
+      </div>
+    </div>
+  </body>
 </html>

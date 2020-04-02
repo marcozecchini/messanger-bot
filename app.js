@@ -3,16 +3,20 @@
 // Imports dependencies and set up http server
 const request = require("request"),
   express = require("express"),
-  body_parser = require("body-parser"),
-  app = express().use(body_parser.json()); // creates express http server
+  bodyParser = require("body-parser"),
+  app = express();
+
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
 var state = {};
 var requests = {};
 var coordinates = {};
+var address = '';
 const SERVER_URL = process.env.SERVER_URL;
-
 
 // Handles messages events
 async function handleMessage(sender_psid, received_message) {
@@ -23,28 +27,66 @@ async function handleMessage(sender_psid, received_message) {
     //If you want to register your shop --
     if (received_message.text.indexOf("Registra") !== -1) {
       // Create the payload for a basic text message
-      response = {
-        text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
-      };
-      state[sender_psid] = 1;
+      requests[sender_psid] = {}
+      response = setRegistraButton();
+      
+      state[sender_psid] = 0; //STATO DI REGISTRA
       console.log(state);
     } else if (sender_psid in state && state[sender_psid] == 1) {
-      requests[sender_psid] = received_message.text;
+      requests[sender_psid]["via"] = received_message.text;
+      // Create the payload for a basic text message
+      response = {
+        text: `🌇 Adesso inviami il nome della città della tua attività`
+      };
+      state[sender_psid] = 2;
+      console.log(state);
+    } else if (sender_psid in state && state[sender_psid] == 2) {
+      // Create the payload for a basic text message
+      requests[sender_psid]["city"] = received_message.text;
+      response = {
+        text: `📍 Bene! Adesso inviami il CAP dove si trova la tua attività`
+      };
+      state[sender_psid] = 3; // STATO di CAP
+      console.log(state);
+    } else if (sender_psid in state && state[sender_psid] == 3) {
+      requests[sender_psid]["CAP"] = received_message.text;
       console.log(requests[sender_psid]);
-      callMap(sender_psid, received_message.text);
-      state[sender_psid] = -1;
+      callMap(sender_psid, requests[sender_psid]["via"]+","+requests[sender_psid]["city"]+","+requests[sender_psid]["CAP"]);
+      state[sender_psid] = 4; //STATO DI YES/NO
     } else {
       console.log(state);
       // Create the payload for a basic text message
-      response = {
-        text: `Ciao! Registra gratuitamente la tua attività sull'app EasyCollect digitando 'Registra'.`
-      };
+      if (state[sender_psid] !== -1){
+        response = contactMessage("Ciao! 📝 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.")
+        state[sender_psid] = -1; //STATO DI INIZIO
+      }
     }
   } else if (received_message.attachments) {
-    // Gets the URL of the message attachment
+    // TODO How to answer at the attachments
+    console.log(received_message.attachments);
+    let type = received_message.attachments[0].type;
     let attachment_url = received_message.attachments[0].payload.url;
     let address = received_message.attachments[0].payload.title;
-    response = send_confirmation(address,'');
+    if(type == "location" && address.includes("'s Location") && (state[sender_psid] === 0)){
+      var coord1 = attachment_url.match(/[-]{0,1}[0-9]{2}[.]{1}[0-9]{1,}/);
+      var coord2 = attachment_url.split(coord1)[1].match(/[-]{0,1}[0-9]{2}[.]{1}[0-9]{1,}/);
+      
+      console.log("COORD1 = " + coord1);
+      console.log("COORD2 = " + coord2);
+      coord2address(sender_psid, coord1, coord2, received_message.attachments);
+    } else if(type == "location" && !address.includes("'s Location") && (state[sender_psid] === 0)){
+      
+      response =  restartRegistra("Attualmente riesco solo a decifrare la tua posizione attuale. Per un indirizzo diverso inseriscilo manualmente. Premi `Registra`");
+      state[sender_psid] = 6; //STATO DI FINE
+      
+    } else {
+      console.log(state);
+      // Create the payload for a basic text message
+      if (state[sender_psid] !== -1){
+        response = contactMessage("Ciao! 📝 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.")
+        state[sender_psid] = -1; //STATO DI INIZIO
+      }
+    }
   }
   // Sends the response message
   callSendAPI(sender_psid, response);
@@ -56,36 +98,54 @@ function handlePostback(sender_psid, received_postback) {
 
   // Get the payload for the postback
   let payload = received_postback.payload;
-  if (payload === "Registra" && !(sender_psid in state)) {
+  if ((payload === "Registra" || payload === "no")  && (state[sender_psid] !== 0)) {
       // Create the payload for a basic text message
-      response = {
-        text: `🏠 Bene! Adesso inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
-      };
-      state[sender_psid] = 1;
+      requests[sender_psid] = {}
+      response = setRegistraButton();
+      /*response = {
+        text: `🏠 Ciao! Ti puoi registrare GRATUITAMENTE da questa chat. Vuoi inviarmi la tua posizione o inserire l'indirizzo della tua attività manualmente?`
+      };*/
+      state[sender_psid] = 0; //STATO DI REGISTRA
       console.log(state);
     } 
-  else if (payload === "Registra2" && !(sender_psid in state)) {
+  else if ((payload === "Registra2" || payload === "no") && (state[sender_psid] !== 0)) {
       // Create the payload for a basic text message
-      response = {
-        text: `🏠 Ciao! Per registrarti gratuitamente inviami l'indirizzo della tua attività:\n\n<nome della via>, <nome della città>, <CAP>\n\n(Es: Corso Italia 11, Roma, 00198)`
-      };
-      state[sender_psid] = 1;
+      requests[sender_psid] = {}
+      response = setRegistraButton(sender_psid);
+      /*response = {
+        text: `🏠 Ciao! Per registrarti gratuitamente inviami il nome della via della tua attività (Es: Corso Italia 11, Viale Garibaldi 12, ...)`
+      };*/
+      state[sender_psid] = 0; //STATO DI REGISTRA
       console.log(state);
     }
+  // Set the response based on the postback payload
+  else if (payload === "man" && state[sender_psid] === 0) {
+    // store the coordinates
+    response = {
+        text: `🏠 Bene! Adesso inviami il nome della via della tua attività (Es: Corso Italia 11, Viale Garibaldi 12, ...)`
+      };
+      state[sender_psid] = 1; //STATO di VIA
+      console.log(state);
+  }
 
   // Set the response based on the postback payload
-  if (payload === "yes") {
+  else if (payload === "yes" && state[sender_psid] === 4) {
     response = setDatiAttivita(sender_psid);
-
+    state[sender_psid] = 5;
     // store the coordinates
-  } else if (payload === "no") {
-    response = { text: "Oops, riprova. Ridigita `Registra`" };
+  } else {
+      console.log(state);
+      // Create the payload for a basic text message
+      if (state[sender_psid] !== -1){
+        response = contactMessage("Ciao! 📝 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.")
+        state[sender_psid] = -1; //STATO DI INIZIO
+      }
   }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
 }
 
-// Define the template
+// Define the template to insert the main data of the shop
 function setDatiAttivita(sender_psid) {
     let response = {
         attachment: {
@@ -106,6 +166,67 @@ function setDatiAttivita(sender_psid) {
     return response;
 }
 
+// Define the template for registering the address manually
+function setRegistraButton() {
+    let response = {
+        attachment: {
+            type: "template",
+            payload: {
+                template_type: "button",
+                text: "🏠 Ciao! Ti puoi registrare GRATUITAMENTE da questa chat. Inviami la tua posizione oppure registra manualmente l'indirizzo della tua attività",
+                buttons: [{
+                    type: "postback",
+                    title: "Inserisci manualmente",
+                    payload: "man"
+                }]
+            }
+        }
+    };
+    return response;
+}
+
+function restartRegistra(text){
+  let response = {
+        attachment: {
+            type: "template",
+            payload: {
+                template_type: "button",
+                text: text,
+                buttons: [{
+                    type: "postback",
+                    title: "Registra",
+                    payload: "Registra"
+                  }]
+              }
+          }
+      };
+  return response;
+}
+
+function contactMessage(text){
+  let response = {
+        attachment: {
+            type: "template",
+            payload: {
+                template_type: "button",
+                text: text,
+                buttons: [{
+                    type: "postback",
+                    title: "Registra",
+                    payload: "Registra"
+                  },{
+                    type: "web_url",
+                    url: "https://vetrina.cloud/#/utenti",
+                    title: "Domande frequenti",
+                    webview_height_ratio: "tall",
+                    messenger_extensions: true
+                }]
+              }
+          }
+      };
+  return response;
+}
+
 // Serve the options path for the webview
 app.get('/options', (req, res, next) => {
     let referer = req.get('Referer');
@@ -119,17 +240,80 @@ app.get('/options', (req, res, next) => {
     }
 });
 
-// Handle postback from webview
-app.get('/optionspostback', (req, res) => {
+// Builds the payload based on the data received from the form
+function buildPayload(request_body){
+    let categories = [parseInt(request_body.category1)];
+    if(request_body.category2 != '') categories.push(parseInt(request_body.category2));
+    if(request_body.category3 != '') categories.push(parseInt(request_body.category3));
+  
+    var payload = {
+      "name" :  request_body.nomeattivita, 
+      "address" : requests[request_body.psid]["via"],
+      "city" : requests[request_body.psid]["city"],
+      "cap" : requests[request_body.psid]["CAP"],
+      "description" : request_body.description, 
+      "categories_ids": categories
+    }
+    
+    // Check contacts
+    if(request_body.telefono != '') payload.phone = request_body.telefono;
+    if(request_body.telegram != '') payload.telegram = request_body.telegram;
+    if(request_body.facebook != '') payload.facebook = request_body.facebook;
+    if(request_body.website != '') payload.website = request_body.website;
+  
+    console.log("PSID " + request_body.psid);
+  
+    return payload;
+}
+
+// Handle postback from webview. Send the post request to the BACKEND of
+// the application. If success, return the message on messenger.
+app.post('/optionspostback', (req, res) => {
     let body = req.query;
-    let response = {
-        "text": 'Grazie, i dati della tua attività sono stati registrati.'
-    };
+    var request_body = req.body;
+    let payload = buildPayload(request_body);
+    console.log(payload);
+    
+    
+    request(
+      {
+        uri: process.env.BACKEND_URL+"/shops",
+        method: "POST",
+        json: payload
+      },
+      (err, res, body) => {
+        if (!err) {
+          
+        //if (!err && res.statusCode === 200) {
+          if (res.statusCode === 419){
+            console.log(res.statusCode+": Backend cannot solve the address!");
 
-    res.status(200).send('<h1>Grazie! Chiudi questa finestra per ritronare alla conversazione</h1>');
-    callSendAPI(body.psid, response);
+            let response = restartRegistra("Mi dispiace ma l'indirizzo non è valido. Riprova: ridigita 'Registra' o premi il pulsante!");
+
+            callSendAPI(request_body.psid, response);
+          } else if (res.statusCode === 200) {
+            console.log(res.statusCode+": POST for shops success!");
+
+            let response = {
+                "text": 'Grazie, i dati della tua attività sono stati registrati.'
+            };
+
+            callSendAPI(request_body.psid, response);
+          }else {
+            console.log(res.statusCode+": something wrong!");
+
+            let response = restartRegistra("Mi dispiace ma qualcosa è andato storto ... Riprova: ridigita 'Registra' o premi il pulsante!");
+
+            callSendAPI(request_body.psid, response);
+          }
+        } else {
+          console.error("Unable to send message: " + err);
+        }
+      }
+    );
+  
+  res.status(200).send('Grazie! Chiudi questa finestra per ritronare alla conversazione');
 });
-
 
 function send_confirmation(requested_road, coordinates) {
   var coord = '';
@@ -169,6 +353,53 @@ function send_confirmation(requested_road, coordinates) {
 }
 
 
+// https://dev.virtualearth.net/REST/v1/LocationRecog/{point}
+function coord2address(sender_psid, coord1, coord2){
+  //http://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=xml&key={BingMapsAPIKey}  
+  console.log(
+    "hhttp://dev.virtualearth.net/REST/v1/Locations/" + coord1+","+coord2+
+      "?key=" +
+      process.env.MAP_TOKEN+"&output=json"
+  );
+  request(
+    {
+      uri:
+        "http://dev.virtualearth.net/REST/v1/Locations/" + coord1+","+coord2+
+        "?key=" +
+        process.env.MAP_TOKEN+"&output=json",
+      method: "GET"
+    },
+    (err, res, body) => {
+      if (!err) {
+        body = JSON.parse(body);
+        //console.log(JSON.stringify(body.resourceSets[0].resources[0].address.postalCode))
+        address =
+          body.resourceSets[0].resources[0].address.addressLine +", "+
+          body.resourceSets[0].resources[0].address.locality +", "+
+          body.resourceSets[0].resources[0].address.postalCode;
+        
+        
+        requests[sender_psid]["via"] = body.resourceSets[0].resources[0].address.addressLine;
+        requests[sender_psid]["city"] = body.resourceSets[0].resources[0].address.locality;
+        requests[sender_psid]["CAP"] = body.resourceSets[0].resources[0].address.postalCode;
+        
+        console.log("ADDRESS = " + address);
+        // Create the payload for a basic text message
+        var coordinates = [coord1, coord2]
+        var response = send_confirmation(address, coordinates);
+        //state[sender_psid] = -1;
+        state[sender_psid] = 4; //STATO DI YES/NO
+        // Sends the response message
+        callSendAPI(sender_psid, response);
+      } else {
+        console.error("Unable to receive page:" + err);
+      }
+    }
+  );
+}
+
+
+// Sends the reply to the user to confirm the correction of the address
 function callMap(sender_psid, req) {
   var coordinates;
   console.log(
@@ -190,13 +421,18 @@ function callMap(sender_psid, req) {
       if (!err) {
         // console.log(JSON.stringify(res));
         body = JSON.parse(body);
-        coordinates =
-          body["resourceSets"][0]["resources"][0]["point"]["coordinates"];
-        // Create the payload for a basic text message
+        var response;
+        if (body["resourceSets"][0]["estimatedTotal"] == 0){
+          response = restartRegistra("Mi dispiace ma l'indirizzo non è valido. Riprova: ridigita 'Registra' o premi il pulsante qui sotto");
+        } else{
+          coordinates =
+            body["resourceSets"][0]["resources"][0]["point"]["coordinates"];
+          // Create the payload for a basic text message
 
-        var response = send_confirmation(req, coordinates);
-        //state[sender_psid] = -1;
-        // Sends the response message
+          response = send_confirmation(req, coordinates);
+          //state[sender_psid] = -1;
+          // Sends the response message
+        }
         callSendAPI(sender_psid, response);
       } else {
         console.error("Unable to receive page:" + err);
