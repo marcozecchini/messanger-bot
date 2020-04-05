@@ -254,7 +254,7 @@ function contactMessage(text) {
           },
           {
             type: "web_url",
-            url: "https://colligo.shop/domande-frequenti",
+            url: "https://www.colligo.shop/domande-frequenti",
             title: "Domande frequenti",
             webview_height_ratio: "tall",
             messenger_extensions: true
