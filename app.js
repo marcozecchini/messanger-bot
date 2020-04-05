@@ -216,7 +216,7 @@ function contactMessage(text){
                     payload: "Registra"
                   },{
                     type: "web_url",
-                    url: "https://vetrina.cloud/#/utenti",
+                    url: "https://colligo.shop/domande-frequenti",
                     title: "Domande frequenti",
                     webview_height_ratio: "tall",
                     messenger_extensions: true
@@ -357,7 +357,7 @@ function send_confirmation(requested_road, coordinates) {
 function coord2address(sender_psid, coord1, coord2){
   //http://dev.virtualearth.net/REST/v1/Locations/47.64054,-122.12934?o=xml&key={BingMapsAPIKey}  
   console.log(
-    "hhttp://dev.virtualearth.net/REST/v1/Locations/" + coord1+","+coord2+
+    "http://dev.virtualearth.net/REST/v1/Locations/" + coord1+","+coord2+
       "?key=" +
       process.env.MAP_TOKEN+"&output=json"
   );
