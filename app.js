@@ -229,6 +229,7 @@ function contactMessage(text){
 
 // Serve the options path for the webview
 app.get('/options', (req, res, next) => {
+  console.log("SENDING activity form");
     let referer = req.get('Referer');
     if (referer) {
         if (referer.indexOf('www.messenger.com') >= 0) {
