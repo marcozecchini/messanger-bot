@@ -294,7 +294,8 @@ function buildPayload(request_body) {
     city: requests[request_body.psid]["city"],
     cap: requests[request_body.psid]["CAP"],
     description: request_body.description,
-    categories_ids: categories
+    categories_ids: categories,
+    accepts_terms_and_conditions: true
   };
 
   // Check contacts
