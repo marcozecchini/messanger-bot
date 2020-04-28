@@ -95,8 +95,8 @@ function setDatiAttivita(text) {
         buttons: [
           {
             type: "web_url",
-            //url: "https://colligo.shop/registrati",
-            url : "https://ricerca.repubblica.it/ricerca/repubblica?query=prova&view=repubblica&ref=HRHS",
+            url: "https://colligo.shop/registrati",
+            //url : "https://ricerca.repubblica.it/ricerca/repubblica?query=prova&view=repubblica&ref=HRHS",
             title: "Inserisci dati attività",
             webview_height_ratio: "tall",
             messenger_extensions: true
@@ -140,8 +140,7 @@ function contactMessage(text) {
 
 
 /*** Serve the colligo registration path for the webview ***/
-//app.get("https://colligo.shop/registrati", (req, res, next) => {
-app.get("https://ricerca.repubblica.it/ricerca/repubblica?query=prova&view=repubblica&ref=HRHS", (req, res, next) => {
+app.get("https://colligo.shop/registrati", (req, res, next) => {
   console.log("SENDING activity form");
   let referer = req.get("Referer");
   if (referer) {
