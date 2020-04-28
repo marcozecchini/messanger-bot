@@ -16,8 +16,8 @@ app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
 var state = {};
 var requests = {};
 var contact_msg = "Ciao! 👋 Grazie di averci contattato. Provvederemo a risponderti al più presto! 😃\nIntanto consulta le `Domande frequenti` sul nostro sito oppure clicca `Registra` per registrare gratuitamente la tua attività.";
-var reg_msg = "Ciao! 📝 Ti puoi registrare GRATUITAMENTE da questa chat. Clicca sul tasto qui di seguito e compila i campi richiesti.";
-var reg_msg2 = "Ti puoi registrare GRATUITAMENTE da questa chat. 📝 Clicca sul tasto qui di seguito e compila i campi richiesti.";
+var reg_msg = "Ciao! 📝 Ti puoi registrare GRATUITAMENTE da questa chat.\n\nClicca sul tasto qui di seguito e compila i campi richiesti. 😃";
+var reg_msg2 = "Ti puoi registrare GRATUITAMENTE da questa chat. 📝\n\nClicca sul tasto qui di seguito e compila i campi richiesti. 😃";
 
 /****************** Handles messages events ******************/
 async function handleMessage(sender_psid, received_message) {
@@ -95,7 +95,8 @@ function setDatiAttivita(text) {
         buttons: [
           {
             type: "web_url",
-            url: "https://colligo.shop/registrati",
+            //url: "https://colligo.shop/registrati",
+            url : "https://ricerca.repubblica.it/ricerca/repubblica?query=prova&view=repubblica&ref=HRHS",
             title: "Inserisci dati attività",
             webview_height_ratio: "tall",
             messenger_extensions: true
@@ -139,7 +140,8 @@ function contactMessage(text) {
 
 
 /*** Serve the colligo registration path for the webview ***/
-app.get("https://colligo.shop/registrati", (req, res, next) => {
+//app.get("https://colligo.shop/registrati", (req, res, next) => {
+app.get("https://ricerca.repubblica.it/ricerca/repubblica?query=prova&view=repubblica&ref=HRHS", (req, res, next) => {
   console.log("SENDING activity form");
   let referer = req.get("Referer");
   if (referer) {
@@ -147,6 +149,9 @@ app.get("https://colligo.shop/registrati", (req, res, next) => {
       res.setHeader("X-Frame-Options", "ALLOW-FROM https://www.messenger.com/");
     } else if (referer.indexOf("www.facebook.com") >= 0) {
       res.setHeader("X-Frame-Options", "ALLOW-FROM https://www.facebook.com/");
+    }
+    else {
+      console.log("prova");
     }
     console.log(req.uri.href);
     console.log(res.request.uri.href);
